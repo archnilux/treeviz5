@@ -1,24 +1,120 @@
 import React from "react";
 import { TreevizReact } from "treeviz-react";
+import { Add, BugReport, Cached } from "@material-ui/icons";
 import { renderToString } from "react-dom/server";
+
 const data_1 = [
   {
     id: 1,
-    text_1: "Chaos",
-    description: "Void",
+    product: "Manteau",
+    batch: "1234",
     father: null,
-    color: "#FF5722"
+    color: null,
+    icon: ""
   },
   {
     id: 2,
-    text_1: "Tartarus",
-    description: "Abyss",
     father: 1,
-    color: "#FFC107"
+    color: "#FF5722",
+    actor: "nom",
+    activity: "Confection",
+    icon: ""
   },
-  { id: 3, text_1: "Gaia", description: "Earth", father: 1, color: "#8BC34A" },
-  { id: 4, text_1: "Eros", description: "Desire", father: 1, color: "#00BCD4" }
+  {
+    id: 3,
+    father: 2,
+    color: "#FF5722",
+    component: "Teinture",
+    batch: "3456",
+    icon: ""
+  },
+  {
+    id: 4,
+    father: 2,
+    color: "#FF5722",
+    component: "Bouton",
+    batch: "92347",
+    icon: ""
+  },
+  {
+    id: 5,
+    father: 2,
+    color: "#FF5722",
+    component: "Laine",
+    batch: "23447",
+    icon: ""
+  },
+  {
+    id: 6,
+    father: 3,
+    color: "#FF5722",
+    actor: "Nom",
+    activity: "Confection",
+    icon: ""
+  },
+  {
+    id: 7,
+    father: 4,
+    color: "#FF5722",
+    actor: "Nom",
+    activity: "Confection",
+    icon: ""
+  },
+  {
+    id: 8,
+    father: 5,
+    actor: "Nom",
+    activity: "tissage",
+    icon: ""
+  }
 ];
+
+const getIcon = (data) => {
+  const type = getNodeType(data);
+  switch (type) {
+    case "product":
+      return renderToString(<Add />);
+    case "actor":
+      return renderToString(<BugReport />);
+    case "component":
+      return renderToString(<Cached />);
+    default:
+      return;
+  }
+};
+
+const getNodeType = (data) => {
+  if (data.product && data.product !== null) {
+    return "product";
+  } else if (data.actor && data.actor !== null) {
+    return "actor";
+  } else if (data.component && data.component !== null) {
+    return "component";
+  }
+};
+
+const getContent = (data) => {
+  const type = getNodeType(data);
+  switch (type) {
+    case "product":
+      return {
+        first: "Produit: " + data.product,
+        second: "Lot: " + data.batch
+      };
+    case "actor":
+      return {
+        first: "Acteur: " + data.actor,
+        second: "Activité: " + data.activity
+      };
+    case "component":
+      return {
+        first: "Composant: " + data.component,
+        second: "Lot: " + data.batch
+      };
+    default:
+      return;
+  }
+};
 
 export const App = () => {
   return (
@@ -27,60 +123,35 @@ export const App = () => {
         <TreevizReact
           data={data_1}
           relationnalField={"father"}
-          nodeWidth={120}
+          nodeWidth={200}
           nodeHeight={80}
-          areaHeight={500}
+          areaHeight={1000}
           areaWidth={1000}
-          mainAxisNodeSpacing={2}
-          secondaryAxisNodeSpacing={2}
+          mainAxisNodeSpacing={0.7}
+          secondaryAxisNodeSpacing={0.7}
           linkShape={"quadraticBeziers"}
           renderNode={(data) => {
             const nodeData = data.data;
             const settings = data.settings;
             let result = "";
-            const tooltip = renderToString(
-              <strong
-                data-toggle="tooltip"
-                data-placement="top"
-                title={nodeData.description}
-              >
-                {nodeData.text_1}
-              </strong>
-            );
-            const popover = renderToString(
-              <button
-                type="button"
-                className="btn btn-secondary"
-                data-container="body"
-                data-toggle="popover"
-                data-placement="top"
-                data-content={nodeData.description}
-              >
-                Popover on top
-              </button>
-            );
-            if (data.depth !== 2) {
-              result = `<div className="box" 
-              style='cursor:pointer;height:${settings.nodeHeight}px; width:${settings.nodeWidth}px;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:${nodeData.color};border-radius:5px;'>
+            const value = getContent(nodeData);
+            const icon = getIcon(nodeData);
+            result = `<div class="box"
+            style='cursor:pointer;height:${settings.nodeHeight}px; width:${settings.nodeWidth}px;display:flex;flex-direction:row;justify-content:center;align-items:center;background-color:${nodeData.color};border-radius:5px;border: 1px solid black'>
+              ${icon}
               <div>
-          ${tooltip}
-          ${popover}
-          </div></div>`;
-            } else {
-              result = `<div className="box" style='cursor:pointer;height:${
-                settings.nodeHeight
-              }px; width:${
-                settings.nodeHeight
-              }px;display:flex;flex-direction:column;justify-content:center;align-items:center;background-color:${
-                nodeData.color
-              };border-radius:${settings.nodeHeight / 2}px;'><div><strong>
-          ${nodeData.text_1}
-          </strong></div></div>`;
-            }
+                <div>
+                  ${value.first}
+                </div>
+                <div>
+                  ${value.second}
+                </div>
+              </div>
+            </div>`;
             return result;
           }}
           duration={600}
-          isHorizontal
+          isHorizontal={false}
           linkWidth={(node) => 10}
         />
       </div>
